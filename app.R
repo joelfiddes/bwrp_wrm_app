@@ -2,8 +2,6 @@ library(shiny)
 library(sf)
 library(leaflet)
 library(dplyr)
-library(readr)
-library(ggplot2)
 library(RColorBrewer)
 
 # === Load Data ===
