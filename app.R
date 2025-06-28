@@ -3,7 +3,6 @@ library(sf)
 library(leaflet)
 library(dplyr)
 library(readr)
-library(ggplot2)
 library(RColorBrewer)
 
 # === Load Data ===
@@ -112,7 +111,7 @@ server <- function(input, output, session) {
     }
 
     # Read time series
-    ts_data <- read_csv(file_path, show_col_types = FALSE)
+    ts_data <- read_csv(file_path)
 
     if (!("Date" %in% names(ts_data))) {
       plot.new()
