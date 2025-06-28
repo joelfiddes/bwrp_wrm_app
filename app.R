@@ -9,7 +9,7 @@ library(RColorBrewer)
 catchments <- st_read("./inputs/modelcatchments.shp") %>%
   mutate(index = row_number() - 1)
 
-anomaly_df <- read_csv("./input/anomaly_df.csv")
+anomaly_df <- read_csv("./inputs/anomaly_df.csv")
 
 # === UI ===
 ui <- fluidPage(
