@@ -12,13 +12,39 @@ catchments <- st_read("./inputs/modelcatchments.shp") %>%
 
 anomaly_df <- read_csv("./inputs/anomaly_df.csv")
 
+
+variable_names <- c(
+  Prain = "Rainfall",
+  Psnow = "Snowfall",
+  SWE = "Snow Water Equivalent",
+  Msnow = "Snow Melt",
+  Total = "Total Precipitation",
+  Rech = "Recharge",
+  Eac = "Actual Evapotranspiration",
+  SM = "Soil Moisture",
+  Qg = "Groundwater Flow",
+  Q0 = "Runoff Q0",
+  Q1 = "Runoff Q1",
+  Q2 = "Runoff Q2",
+  STZ = "Shallow Soil Zone",
+  SUZ = "Surface Unsaturated Zone",
+  SLZ = "Subsurface Unsaturated Zone",
+  q_sim = "Simulated Discharge",
+  WB = "Water Balance"
+)
+
+
+
 # === UI ===
 ui <- fluidPage(
   titlePanel("Baluchistan Water Resources Atlas"),
   sidebarLayout(
     sidebarPanel(
       selectInput("year", "Select Year:", choices = NULL),
-      selectInput("variable", "Select Variable:", choices = NULL),
+      selectInput("variable", "Select Variable:",
+            choices = variable_names,
+            selected = names(variable_names)[1]),
+
       radioButtons("map_view", "Map View:", choices = c("Anomaly" = "anomaly", "Annual Mean" = "annual_mean")),
       helpText("Click a catchment to view its daily time series below.")
     ),
@@ -92,7 +118,7 @@ server <- function(input, output, session) {
         position = "bottomright",
         pal = pal,
         values = color_range,
-        title = paste(column_to_plot, "<br>", input$variable, input$year),
+        title = paste(variable_names[input$variable], "<br>", input$year),
         labFormat = labelFormat(digits = 2)
       )
   })
@@ -130,13 +156,14 @@ server <- function(input, output, session) {
     }
 
     # Plot daily variable
-    ggplot(ts_data, aes(x = date, y = .data[[var]])) +
-      geom_line(color = "blue") +
-      labs(
-        title = paste("Daily", var, "for Catchment", idx),
-        x = "Date", y = var
-      ) +
-      theme_minimal()
+        ggplot(ts_data, aes(x = date, y = .data[[var]])) +
+          geom_line(color = "blue") +
+          labs(
+            title = paste("Daily", variable_names[var], "for Catchment", idx),
+            x = "Date", y = variable_names[var]
+          ) +
+          theme_minimal()
+
   })
 
 }
