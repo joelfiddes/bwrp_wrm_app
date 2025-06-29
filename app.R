@@ -123,46 +123,58 @@ server <- function(input, output, session) {
   })
 
   # Time series plot
-  output$timeseries_plot <- renderPlot({
-    req(clicked_index(), input$variable)
-    idx <- clicked_index()
-    var <- input$variable
 
-    # Build file path for this index
-    file_path <- paste0("./results/result_", idx, ".csv")
-    if (!file.exists(file_path)) {
-      plot.new()
-      title(main = paste("File not found:", file_path))
-      return()
-    }
+ output$timeseries_plot <- renderPlot({
+  req(clicked_index(), input$variable)
 
-    # Read time series
-    ts_data <- read_csv(file_path)
+  idx <- clicked_index()
+  var <- input$variable
 
-    if (!("Date" %in% names(ts_data))) {
-      plot.new()
-      title(main = "No 'Date' column found in file.")
-      return()
-    }
+  # Convert displayed variable name (e.g. "Rainfall (mm)") back to internal name (e.g. "Prain")
+  display_to_original <- setNames(names(variable_names), variable_names)
+  var_original <- display_to_original[[var]]
 
-    # Convert date to Date class
-    ts_data <- ts_data %>% mutate(date = as.Date(Date))
+  if (is.null(var_original)) {
+    plot.new()
+    title(main = paste("Unknown variable:", var))
+    return()
+  }
 
-    if (!(var %in% names(ts_data))) {
-      plot.new()
-      title(main = paste("Variable", var, "not found in file."))
-      return()
-    }
+  # Build file path for this index
+  file_path <- paste0("./results/result_", idx, ".csv")
+  if (!file.exists(file_path)) {
+    plot.new()
+    title(main = paste("File not found:", file_path))
+    return()
+  }
 
-    # Plot daily variable
-    ggplot(ts_data, aes(x = date, y = .data[[var]])) +
-      geom_line(color = "blue") +
-      labs(
-        title = paste("Daily", var, "for Catchment", idx),
-        x = "Date", y = var
-      ) +
-      theme_minimal()
-  })
+  # Read time series
+  ts_data <- read_csv(file_path)
+
+  if (!("Date" %in% names(ts_data))) {
+    plot.new()
+    title(main = "No 'Date' column found in file.")
+    return()
+  }
+
+  # Convert date to Date class
+  ts_data <- ts_data %>% mutate(date = as.Date(Date))
+
+  if (!(var_original %in% names(ts_data))) {
+    plot.new()
+    title(main = paste("Variable", var_original, "not found in file."))
+    return()
+  }
+
+  # Plot daily variable
+  ggplot(ts_data, aes(x = date, y = .data[[var_original]])) +
+    geom_line(color = "blue") +
+    labs(
+      title = paste("Daily", var, "for Catchment", idx),
+      x = "Date", y = var
+    ) +
+    theme_minimal()
+})
 
 }
 
