@@ -13,7 +13,7 @@ anomaly_df <- read_csv("./inputs/anomaly_df.csv")
 
 # === UI ===
 ui <- fluidPage(
-  titlePanel("Water Resources Atlas Baluchistan"),
+  titlePanel("Baluchistan Water Resources Atlas"),
   sidebarLayout(
     sidebarPanel(
       selectInput("year", "Select Year:", choices = NULL),
