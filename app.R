@@ -4,6 +4,7 @@ library(leaflet)
 library(dplyr)
 library(readr)
 library(RColorBrewer)
+library(ggplot)
 
 # === Load Data ===
 catchments <- st_read("./inputs/modelcatchments.shp") %>%
