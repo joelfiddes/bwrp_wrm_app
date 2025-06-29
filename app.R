@@ -14,25 +14,27 @@ anomaly_df <- read_csv("./inputs/anomaly_df.csv")
 
 
 variable_names <- c(
-  Prain = "Rainfall",
-  Psnow = "Snowfall",
-  SWE = "Snow Water Equivalent",
-  Msnow = "Snow Melt",
-  Total = "Total Precipitation",
-  Rech = "Recharge",
-  Eac = "Actual Evapotranspiration",
-  SM = "Soil Moisture",
-  Qg = "Groundwater Flow",
-  Q0 = "Runoff Q0",
-  Q1 = "Runoff Q1",
-  Q2 = "Runoff Q2",
-  STZ = "Shallow Soil Zone",
-  SUZ = "Surface Unsaturated Zone",
-  SLZ = "Subsurface Unsaturated Zone",
-  q_sim = "Simulated Discharge",
-  WB = "Water Balance"
+  Prain = "Rainfall (mm)",
+  Psnow = "Snowfall (mm)",
+  SWE = "Snow Water Equivalent (mm)",
+  Msnow = "Snow Melt (mm)",
+  Total = "Total Precipitation (mm)",
+  Rech = "Recharge (mm)",
+  Eac = "Actual Evapotranspiration (mm)",
+  SM = "Soil Moisture (mm)",
+  Qg = "Groundwater Flow (mm)",
+  Q0 = "Runoff Q0 (mm)",
+  Q1 = "Runoff Q1 (mm)",
+  Q2 = "Runoff Q2 (mm)",
+  STZ = "Shallow Soil Zone (mm)",
+  SUZ = "Surface Unsaturated Zone (mm)",
+  SLZ = "Subsurface Unsaturated Zone (mm)",
+  q_sim = "Simulated Discharge (m³/s)",
+  WB = "Water Balance (mm)"
 )
 
+anomaly_df <- anomaly_df %>%
+  mutate(variable = recode(variable, !!!variable_names))
 
 
 # === UI ===
@@ -41,10 +43,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("year", "Select Year:", choices = NULL),
-      selectInput("variable", "Select Variable:",
-            choices = variable_names,
-            selected = names(variable_names)[1]),
-
+      selectInput("variable", "Select Variable:", choices = NULL),
       radioButtons("map_view", "Map View:", choices = c("Anomaly" = "anomaly", "Annual Mean" = "annual_mean")),
       helpText("Click a catchment to view its daily time series below.")
     ),
@@ -59,15 +58,10 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   # Update dropdowns
-observe({
-  updateSelectInput(session, "year", choices = sort(unique(anomaly_df$year)))
-})
-
-# Set variable choices once (outside of observe):
-observeEvent(TRUE, {
-  updateSelectInput(session, "variable", choices = variable_names, selected = names(variable_names)[1])
-}, once = TRUE)
-
+  observe({
+    updateSelectInput(session, "year", choices = sort(unique(anomaly_df$year)))
+    updateSelectInput(session, "variable", choices = sort(unique(anomaly_df$variable)))
+  })
 
   # Reactive: Filtered anomaly data
   filtered_data <- reactive({
@@ -123,7 +117,7 @@ observeEvent(TRUE, {
         position = "bottomright",
         pal = pal,
         values = color_range,
-        title = paste(variable_names[input$variable], "<br>", input$year),
+        title = paste(column_to_plot, "<br>", input$variable, input$year),
         labFormat = labelFormat(digits = 2)
       )
   })
@@ -161,14 +155,13 @@ observeEvent(TRUE, {
     }
 
     # Plot daily variable
-        ggplot(ts_data, aes(x = date, y = .data[[var]])) +
-          geom_line(color = "blue") +
-          labs(
-            title = paste("Daily", variable_names[var], "for Catchment", idx),
-            x = "Date", y = variable_names[var]
-          ) +
-          theme_minimal()
-
+    ggplot(ts_data, aes(x = date, y = .data[[var]])) +
+      geom_line(color = "blue") +
+      labs(
+        title = paste("Daily", var, "for Catchment", idx),
+        x = "Date", y = var
+      ) +
+      theme_minimal()
   })
 
 }
