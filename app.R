@@ -59,10 +59,15 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   # Update dropdowns
-  observe({
-    updateSelectInput(session, "year", choices = sort(unique(anomaly_df$year)))
-    updateSelectInput(session, "variable", choices = sort(unique(anomaly_df$variable)))
-  })
+observe({
+  updateSelectInput(session, "year", choices = sort(unique(anomaly_df$year)))
+})
+
+# Set variable choices once (outside of observe):
+observeEvent(TRUE, {
+  updateSelectInput(session, "variable", choices = variable_names, selected = names(variable_names)[1])
+}, once = TRUE)
+
 
   # Reactive: Filtered anomaly data
   filtered_data <- reactive({
